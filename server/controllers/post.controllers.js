@@ -5,43 +5,58 @@ import path from "path";
 import { isAuthenticated } from "../middelwares/authMiddleWare.js";
 
 export const publishPost = async (req, res) => {
-  // Logic to publish a new post
+    // Logic to publish a new post
+    
+    //check if the user is authenticated
+
     const { title, content } = req.body;
-    // const { user } = req;
-    const thumbnail = req.file.thumbnail;
-    const newPost = new Post({
-        title,
-        content,
-        thumbnail,
-});
+    const { user } = req;
     try {
-        await newPost.save();
-        res.status(201).json({ message: "Post created successfully" });
+        const post = new Post({ title, content, author: user._id });
+        await post.save();
+        res.status(201).json({ message: "Post published successfully" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server Error" });
     }
+
 }
 
 
 
 export const deletePost = async (req, res) => {
   // Logic to delete a post
-   const { id } = req.params;
+    const { id } = req.params;
+    const { user } = req;
+
+    //check if the post is owned by the user
+    const post = await Post.findById(id);
+    if (post.author.toString() !== user._id.toString()) {
+        return res.status(401).json({ message: "You are not authorized to delete this post" });
+    }
     try {
         await Post.findByIdAndDelete(id);
         res.status(200).json({ message: "Post deleted successfully" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server Error" });
-    }
+    }   
+        
 };
 
 
 
-export const editPost = async (req, res) => {
+export const updatePost = async (req, res) => {
   // Logic to edit a post
   const { id } = req.params;
+  const {user} = req;
+
+    //check if the post is owned by the user
+    const post = await Post.findById(id);
+    if (post.author.toString() !== user._id.toString()) {   
+        return res.status(401).json({ message: "You are not authorized to update this post" });
+    }
+
     const { title, content } = req.body;
     try {
         await Post.findByIdAndUpdate(id, { title, content });
@@ -54,7 +69,7 @@ export const editPost = async (req, res) => {
 
 
 
-export const getPost = async (req, res) => {
+export const viewPost = async (req, res) => {
   // Logic to get post details
     const { id } = req.params;
         try {
@@ -67,22 +82,27 @@ export const getPost = async (req, res) => {
     
 };
 
-export const getAllPosts = async (req, res) => {
-    // Logic to get all posts
-    const {authorization} = req.headers;
-    if (!authorization) {
-        return res.status(401).json({message: "You need to login first"});
-    }
-    try{
-        const token = authorization.split(" ")[1];
-        const decoded = jsonwebtoken.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-        req.user = user;
-        const posts = await Post.find({user: user._id});
+
+export const viewMyPosts = async (req, res) => {
+    // Logic to get all posts of a user
+    const { user } = req;
+    try {
+        const posts = await Post.find({ author: user._id });
         res.status(200).json(posts);
-    
-    }catch(err){
+    } catch (err) {
         console.error(err);
-        res.status(500).json({message: "Server Error"});
+        res.status(500).json({ message: "Server Error" });
     }
+}
+
+export const viewAllPosts = async (req, res) => {
+    // Logic to get all posts
+    try {
+        const posts = await Post.find();
+        res.status(200).json(posts);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+    }
+    
 }

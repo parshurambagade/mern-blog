@@ -1,5 +1,5 @@
 import express from 'express';
-import { deletePost, editPost, getPost, publishPost, getAllPosts } from '../controllers/post.controllers.js';
+import { deletePost,  viewPost, publishPost, viewAllPosts,viewMyPosts, updatePost } from '../controllers/post.controllers.js';
 import multer from 'multer';
 import { isAuthenticated } from '../middelwares/authMiddleWare.js';
 
@@ -19,9 +19,10 @@ const upload = multer({ storage: storage });
 
 // Post Routes (protected)
 router.post('/publish', upload.single("thumbnail"), isAuthenticated, publishPost);
-router.delete('/post/:id', isAuthenticated, deletePost);
-router.put('/post/:id', isAuthenticated, editPost);
-router.get('/post/:id', isAuthenticated, getPost);
-router.get('/posts',isAuthenticated, getAllPosts);
+router.delete('/delete/:id', isAuthenticated, deletePost);
+router.put('/update/:id', isAuthenticated, updatePost);
+router.get('/my-posts',isAuthenticated, viewMyPosts);
+router.get('/view/:id', viewPost);
+router.get('/all-posts', viewAllPosts);
 
 export default router;
