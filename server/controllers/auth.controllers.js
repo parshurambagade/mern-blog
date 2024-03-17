@@ -23,10 +23,10 @@ export const register = async (req, res) => {
         password: hashedPassword,
         })
     await newUser.save();
-    res.status(201).json({message: "User created successfully"});
+    return res.status(201).json({message: "Account created successfully!"});
    }catch(err) {
     console.error(err);
-    res.status(500).json({message: "Server Error"})
+    return res.status(500).json({message: "Server Error"})
    
    }
 };
@@ -51,7 +51,7 @@ export const login = async (req, res) => {
 
     // Create the user token
     const token = jsonwebtoken.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "1h"});
-    res.status(200).json({mesage: "Logged in successful!", token});
+    return res.status(200).json({message: "Logged in successfully!", token, user: {id: user._id, username: user.username, email: user.email}});
 
 }catch(err){
     console.error(err);
@@ -62,8 +62,11 @@ export const login = async (req, res) => {
 
 
 export const logout = async (req, res) => {
-  // Logic to logout user
-    res.send("logout");
+  try {
+    return res.status(200).json({ message: "Logged out successfully!" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server Error" });
+  }
 };
-
 

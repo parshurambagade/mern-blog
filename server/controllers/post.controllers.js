@@ -6,13 +6,18 @@ import { isAuthenticated } from "../middelwares/authMiddleWare.js";
 
 export const publishPost = async (req, res) => {
     // Logic to publish a new post
-    
-    //check if the user is authenticated
 
     const { title, content } = req.body;
     const { user } = req;
+    // get thumbnail with multer
+    const thumbnail = req.file.path;
+    if(!title || !content || !thumbnail) {
+        return res.status(400).json({ message: "All fields are required" });
+    }
+    
+     
     try {
-        const post = new Post({ title, content, author: user._id });
+        const post = new Post({ title, content, thumbnail, author: user._id });
         await post.save();
         res.status(201).json({ message: "Post published successfully" });
     } catch (err) {
@@ -58,6 +63,7 @@ export const updatePost = async (req, res) => {
     }
 
     const { title, content } = req.body;
+
     try {
         await Post.findByIdAndUpdate(id, { title, content });
         res.status(200).json({ message: "Post updated successfully" });
@@ -86,9 +92,12 @@ export const viewPost = async (req, res) => {
 export const viewMyPosts = async (req, res) => {
     // Logic to get all posts of a user
     const { user } = req;
+
     try {
+
         const posts = await Post.find({ author: user._id });
         res.status(200).json(posts);
+        
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server Error" });
@@ -98,7 +107,7 @@ export const viewMyPosts = async (req, res) => {
 export const viewAllPosts = async (req, res) => {
     // Logic to get all posts
     try {
-        const posts = await Post.find();
+        const posts = await Post.find({});
         res.status(200).json(posts);
     } catch (err) {
         console.error(err);
