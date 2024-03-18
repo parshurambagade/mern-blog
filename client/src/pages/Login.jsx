@@ -25,7 +25,7 @@ export default function Login() {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-
+    
       try {
         const res = await axios.post('/api/auth/login', {
           email,
@@ -33,16 +33,17 @@ export default function Login() {
         });
         dispatch(setUser({token: res.data.token, user: res.data.user}));
         notifySuccess(res.data.message);
-
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
+    
+        // Use useNavigate to programmatically navigate after successful login
         
+        navigate('/'); // Navigate to the home page
+    
       } catch (err) {
-        console.error(err.response.data.message);
-        notifyFailure(err.response.data.message);
+        console.error(err); // Log unexpected errors
+        notifyFailure(err.response?.data?.message || 'An unexpected error occurred');
       } 
     }
+    
     return (
       <>
       <ToastContainer />
